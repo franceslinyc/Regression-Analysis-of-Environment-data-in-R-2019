@@ -1,0 +1,144 @@
+---
+title: "Project_Environment_data"
+author: "Frances Lin"
+date: "5/2019"
+output: word_document
+---
+
+## I. INTRODUCTION
+
+## II. DATA DESCRIPTION
+
+## III. SUMMARY STATISTICS AND GRAPHICS
+
+```{r}
+library(dplyr)
+library(car)
+library(GGally)
+library(ggplot2)
+```
+
+```{r}
+# Load data 
+WBData <- read.csv("https://raw.githubusercontent.com/franceslinyc/Regression-Analysis-of-Environment-data-in-R-2019/master/worldbank.csv")
+str(WBData)
+#View(WBData)
+
+# Attach data set 
+attach(WBData)
+
+# Log Transform all Y and Xs 
+logCO2.per.capita <- log(CO2.per.capita)
+logGDP.per.capita <- log(GDP.per.capita)
+logEnergy.use.per.capita <- log(Energy.use.per.capita)
+logElectric.power.per.capita <- log(Electric.power.per.capita)
+logGNI.per.capita <- log(GNI.per.capita)
+
+# Create a new data frame: log 
+logWBData <- data.frame(logCO2.per.capita, logGDP.per.capita, 
+                        logEnergy.use.per.capita, logElectric.power.per.capita, 
+                        logGNI.per.capita) 
+str(logWBData)
+#View(logWBData)
+
+# Attach data set 
+attach(logWBData)
+```
+
+```{r}
+# Descriptive Statistics: original scale, log 
+summary(CO2.per.capita)
+summary(GDP.per.capita)
+summary(Energy.use.per.capita)
+summary(Electric.power.per.capita)
+summary(WBData$GNI.per.capita)
+
+summary(logCO2.per.capita)
+summary(logGDP.per.capita)
+summary(logEnergy.use.per.capita)
+summary(logElectric.power.per.capita)
+summary(logGNI.per.capita)
+```
+
+```{r}
+# Pairwise Scatterplots using ggplot2
+ggpairs(WBData[, -1]) + ggtitle("Pairwise Scatterplots")
+
+# Pairwise Scatterplots using ggplot2: log
+ggpairs(logWBData) + ggtitle("Pairwise Scatterplots: Log")
+```
+
+## IV. ANALYSIS
+
+## V. RESULTS AND CONCLUSIONS
+
+```{r}
+# Part I analysis 
+# Fit multiple linear regression model: log, w/ interaction 
+lmMInteract <- lm(logCO2.per.capita~logGDP.per.capita*
+                  logEnergy.use.per.capita*logElectric.power.per.capita)
+summary(lmMInteract)
+#plot(lmMInteract)
+```
+
+```{r}
+# Part II analysis 
+lmEKC1Log <- lm(logCO2.per.capita~logGDP.per.capita)
+lmEKC2Log <- lm(logCO2.per.capita~logGDP.per.capita+I(logGDP.per.capita^2))
+lmEKC3Log <- lm(logCO2.per.capita~logGDP.per.capita+I(logGDP.per.capita^2)++I(logGDP.per.capita^3))
+summary(lmEKC1Log)
+summary(lmEKC2Log)
+summary(lmEKC3Log)
+```
+
+```{r}
+# Fit linear, quadratic, and cubic reg model: test the EKC hypotheis
+par(mfrow=c(1, 1))
+plot(CO2.per.capita~GDP.per.capita, 
+     main="The EKC hypothesis") 
+
+lmEKC1 <- lm(CO2.per.capita~GDP.per.capita)
+summary(GDP.per.capita)
+Xnew <- seq(from=273.5, to=185152.5) 
+Yhat1 <- predict(lmEKC1, list(GDP.per.capita=Xnew)) 
+lines(Yhat1~Xnew)
+
+lmEKC2 <- lm(CO2.per.capita~GDP.per.capita+I(GDP.per.capita^2))
+Xnew <- seq(from=273.5, to=185152.5) 
+Yhat2 <- predict(lmEKC2, list(GDP.per.capita=Xnew)) 
+lines(Yhat2~Xnew)
+
+lmEKC3 <- lm(CO2.per.capita~GDP.per.capita+I(GDP.per.capita^2)++I(GDP.per.capita^3))
+Xnew <- seq(from=273.5, to=185152.5)
+Yhat3 <- predict(lmEKC3, list(GDP.per.capita=Xnew)) 
+lines(Yhat3~Xnew)
+```
+
+```{r}
+#Fit linear, quadratic, and cubic reg model: test the EKC hypotheis, log 
+par(mfrow=c(1, 1))
+plot(logCO2.per.capita~logGDP.per.capita, 
+     main="The EKC hypothesis: Log Transform") 
+
+lmEKC1Log<-lm(logCO2.per.capita~logGDP.per.capita)
+summary(logGDP.per.capita)
+Xnew <- seq(from=5.611, to=12.129) 
+Yhat1 <- predict(lmEKC1Log, list(logGDP.per.capita=Xnew)) 
+lines(Yhat1~Xnew)
+
+lmEKC2Log<-lm(logCO2.per.capita~logGDP.per.capita+I(logGDP.per.capita^2))
+Xnew <- seq(from=5.611, to=12.129) 
+Yhat2 <- predict(lmEKC2Log, list(logGDP.per.capita=Xnew)) 
+lines(Yhat2~Xnew)
+
+lmEKC3Log<-lm(logCO2.per.capita~logGDP.per.capita+I(logGDP.per.capita^2)++I(logGDP.per.capita^3))
+Xnew <- seq(from=5.611, to=12.129) 
+Yhat3 <- predict(lmEKC3Log, list(logGDP.per.capita=Xnew)) 
+lines(Yhat3~Xnew)
+```
+
+## REFERENCES
+
+## R CODE
+
+## SUPPLEMENTS
